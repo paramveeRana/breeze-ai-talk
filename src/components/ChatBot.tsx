@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMessage } from './ChatMessage';
@@ -20,14 +19,12 @@ interface Chat {
   messages: Message[];
 }
 
-const OPENAI_API_KEY = "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";
-
 export const ChatBot: React.FC = () => {
   const [chats, setChats] = useState<Chat[]>([]);
   const [activeChat, setActiveChat] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const openaiService = new OpenAIService(OPENAI_API_KEY);
+  const openaiService = new OpenAIService();
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -128,7 +125,7 @@ export const ChatBot: React.FC = () => {
 
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message. Please try again.');
+      toast.error('Failed to send message. Please check your API configuration.');
     } finally {
       setIsLoading(false);
     }
