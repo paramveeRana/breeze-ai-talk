@@ -1,3 +1,4 @@
+
 import React, { useState, useRef, useEffect } from 'react';
 import { ChatSidebar } from './ChatSidebar';
 import { ChatMessage } from './ChatMessage';
@@ -108,7 +109,9 @@ export const ChatBot: React.FC = () => {
         content: msg.content,
       }));
 
+      console.log('Sending messages to OpenAI service:', openaiMessages);
       const response = await openaiService.sendMessage(openaiMessages);
+      console.log('Received response from OpenAI service:', response);
 
       const assistantMessage: Message = {
         id: crypto.randomUUID(),
@@ -123,9 +126,34 @@ export const ChatBot: React.FC = () => {
           : chat
       ));
 
+      toast.success('Message sent successfully!');
+
     } catch (error) {
       console.error('Error sending message:', error);
-      toast.error('Failed to send message. Please check your API configuration.');
+      
+      let errorMessage = 'Failed to send message. Please try again.';
+      
+      if (error.message?.includes('OpenAI API key')) {
+        errorMessage = 'OpenAI API key is missing. Please configure it in Supabase Edge Function secrets.';
+      } else if (error.message?.includes('quota')) {
+        errorMessage = 'OpenAI API quota exceeded. Please check your API usage.';
+      }
+      
+      toast.error(errorMessage);
+      
+      // Add error message to chat
+      const errorChatMessage: Message = {
+        id: crypto.randomUUID(),
+        content: `Error: ${errorMessage}`,
+        role: 'assistant',
+        timestamp: new Date(),
+      };
+
+      setChats(prev => prev.map(chat => 
+        chat.id === activeChat 
+          ? { ...chat, messages: [...chat.messages, errorChatMessage] }
+          : chat
+      ));
     } finally {
       setIsLoading(false);
     }
@@ -152,6 +180,11 @@ export const ChatBot: React.FC = () => {
                   <div className="text-center text-gray-500">
                     <h2 className="text-2xl font-semibold mb-2">Start a new conversation</h2>
                     <p>Type a message below to begin chatting with the AI assistant.</p>
+                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded-lg max-w-md">
+                      <p className="text-sm text-yellow-800">
+                        <strong>Note:</strong> Make sure to add your OpenAI API key to Supabase Edge Function secrets for the chatbot to work.
+                      </p>
+                    </div>
                   </div>
                 </div>
               ) : (

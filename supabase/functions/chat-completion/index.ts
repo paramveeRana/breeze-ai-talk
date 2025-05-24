@@ -23,8 +23,12 @@ serve(async (req) => {
   try {
     const { messages } = await req.json();
 
+    console.log('Received messages:', messages);
+    console.log('API Key exists:', !!openAIApiKey);
+
     if (!openAIApiKey) {
-      throw new Error('OpenAI API key not configured');
+      console.error('OpenAI API key not found in environment');
+      throw new Error('OpenAI API key not configured. Please add OPENAI_API_KEY to your Supabase Edge Function secrets.');
     }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -47,12 +51,17 @@ serve(async (req) => {
       }),
     });
 
+    console.log('OpenAI API response status:', response.status);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error?.message || 'Failed to get response from OpenAI');
+      const errorData = await response.json().catch(() => ({}));
+      console.error('OpenAI API error:', errorData);
+      throw new Error(errorData.error?.message || `OpenAI API error: ${response.status} ${response.statusText}`);
     }
 
     const data = await response.json();
+    console.log('OpenAI API success, response received');
+    
     const content = data.choices[0]?.message?.content || 'Sorry, I could not generate a response.';
 
     return new Response(JSON.stringify({ content }), {
@@ -60,7 +69,9 @@ serve(async (req) => {
     });
   } catch (error) {
     console.error('Error in chat-completion function:', error);
-    return new Response(JSON.stringify({ error: error.message }), {
+    return new Response(JSON.stringify({ 
+      error: error.message || 'An unexpected error occurred'
+    }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
