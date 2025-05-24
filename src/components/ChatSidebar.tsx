@@ -2,12 +2,7 @@
 import React from 'react';
 import { Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-
-interface Chat {
-  id: string;
-  title: string;
-  createdAt: Date;
-}
+import { Chat } from '../services/chatService';
 
 interface ChatSidebarProps {
   chats: Chat[];
