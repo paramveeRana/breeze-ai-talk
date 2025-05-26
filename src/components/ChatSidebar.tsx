@@ -3,6 +3,7 @@ import React from 'react';
 import { Plus, MessageSquare, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Chat } from '../services/chatService';
+import { AboutSection } from './AboutSection';
 
 interface ChatSidebarProps {
   chats: Chat[];
@@ -58,6 +59,8 @@ export const ChatSidebar: React.FC<ChatSidebarProps> = ({
           </div>
         ))}
       </div>
+      
+      <AboutSection />
     </div>
   );
 };

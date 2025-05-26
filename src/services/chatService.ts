@@ -64,7 +64,10 @@ export class ChatService {
       .order('created_at', { ascending: true });
 
     if (error) throw error;
-    return data || [];
+    return (data || []).map(msg => ({
+      ...msg,
+      role: msg.role as 'user' | 'assistant'
+    }));
   }
 
   async addMessage(chatId: string, content: string, role: 'user' | 'assistant'): Promise<Message> {
@@ -75,6 +78,9 @@ export class ChatService {
       .single();
 
     if (error) throw error;
-    return data;
+    return {
+      ...data,
+      role: data.role as 'user' | 'assistant'
+    };
   }
 }
